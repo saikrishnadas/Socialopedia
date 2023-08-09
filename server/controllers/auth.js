@@ -50,11 +50,17 @@ export const login = async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ msg: "Invalid Password" })
 
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+        const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30s' });
+        const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d' });
 
+        // Saving refreshToken with current user
+        user.refreshToken = refreshToken;
+        const savedUser = await user.save();
         // Create a new user object without the password property
-        const userWithoutPassword = { ...user.toObject(), password: undefined };
-        res.status(200).json({ token, user: userWithoutPassword })
+        const userWithoutPassword = { ...savedUser.toObject(), password: undefined };
+
+        res.cookie('jwt', refreshToken, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 }); //sending refresh token via res.json is risky as it can be accessed by javasciprt, but using cookie with http only, its better in security. 
+        res.status(200).json({ accessToken, user: userWithoutPassword })
     } catch (error) {
         res.status(500).json({ error: error.message })
     }

@@ -35,7 +35,8 @@ const UserSchema = new mongoose.Schema({
     location: String,
     occupation: String,
     viewedProfile: Number,
-    impression: Number
+    impression: Number,
+    refreshToken: String
 }, { timestamps: true });
 
 const User = mongoose.model("User", UserSchema);

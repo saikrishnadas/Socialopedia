@@ -2,16 +2,17 @@ import jwt from "jsonwebtoken";
 
 export const verifyToken = async (req, res, next) => {
     try {
-        let token = req.header("Authorization");
+        let authHeader = req.header("Authorization");
 
-        if (!token) return res.status(403).send("Access Denied")
+        if (!authHeader) return res.status(401).send("Unauthorization")
 
-        if (token.startsWith("Bearer ")) {
-            token = token.slice(7, token.length).trimLeft();
-        }
+        const token = authHeader.split(' ')[1]; //Bearer Token
 
-        const verified = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = verified;
+        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+            if (err) return res.status(403).send("Access Denied")
+            req.user = decoded.id
+        });
+
         next();
 
     } catch (error) {
