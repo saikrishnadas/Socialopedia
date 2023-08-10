@@ -16,6 +16,11 @@ export const register = async (req, res) => {
             occupation
         } = req.body;
 
+        // check for duplicate email in the db
+        const duplicate = await User.findOne({ email: email }).exec();
+        if (duplicate) return res.sendStatus(409); //Conflict 
+
+
         const salt = await bcrypt.genSalt();
         const hasedPassword = await bcrypt.hash(password, salt)
 
