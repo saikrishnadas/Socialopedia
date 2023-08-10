@@ -18,6 +18,7 @@ import { verifyToken } from "./middleware/auth.js";
 import { createPost } from "./controllers/posts.js";
 import cookieParser from "cookie-parser";
 import { credentials } from "./middleware/credentials.js";
+import { corsOptions } from "./config/corsOptions.js"
 
 // CONFIGURATIONS
 const __filename = fileURLToPath(import.meta.url);
@@ -33,7 +34,7 @@ app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 // Handle options credentials check - before CORS!
 // and fetch cookies credentials requirement
 app.use(credentials);
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(cookieParser())
 app.use("/assets", express.static(path.join(__dirname, "public/assets")))
 

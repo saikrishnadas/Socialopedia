@@ -59,7 +59,7 @@ export const login = async (req, res) => {
         // Create a new user object without the password property
         const userWithoutPassword = { ...savedUser.toObject(), password: undefined };
 
-        res.cookie('jwt', refreshToken, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 }); //sending refresh token via res.json is risky as it can be accessed by javasciprt, but using cookie with http only, its better in security. 
+        res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: "None", secure: true, maxAge: 24 * 60 * 60 * 1000 }); //sending refresh token via res.json is risky as it can be accessed by javasciprt, but using cookie with http only, its better in security. 
         res.status(200).json({ accessToken, user: userWithoutPassword })
     } catch (error) {
         res.status(500).json({ error: error.message })
