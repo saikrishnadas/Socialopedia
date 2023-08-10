@@ -16,6 +16,10 @@ export const register = async (req, res) => {
             occupation
         } = req.body;
 
+        // check for duplicate email in the db
+        const duplicate = await User.findOne({ email: email }).exec();
+        if (duplicate) return res.sendStatus(409); //Conflict 
+
         const salt = await bcrypt.genSalt();
         const hasedPassword = await bcrypt.hash(password, salt)
 
@@ -50,7 +54,14 @@ export const login = async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ msg: "Invalid Password" })
 
-        const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30s' });
+        const roles = Object.values(user.roles).filter(Boolean);
+
+        const accessToken = jwt.sign({
+            "UserInfo": {
+                id: user.id,
+                "roles": roles
+            }
+        }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30s' });
         const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d' });
 
         // Saving refreshToken with current user
